@@ -2,11 +2,14 @@
 
 // see http://unarchiver.c3.cx/commandline
 // unar and lsar
-const path = require('path'),
-  exec = require('child_process').exec,
-  os = require('os'),
-  when = require('when');
+import { dirname, join } from 'path';
+import { exec } from 'child_process';
+import when from 'when';
+import { fileURLToPath } from 'url';
 
+const __filename = fileURLToPath(
+  import.meta.url);
+const __dirname = dirname(__filename);
 const hasOwn = Object.prototype.hasOwnProperty;
 
 /**
@@ -28,10 +31,9 @@ function array_map(xs, callback) {
   return res;
 };
 
-// from http://github.com/substack/node-shell-quote, needed to remove more escaping
 function quote(xs) {
   return array_map(xs, function (s) {
-    return String(s).replace(/([#!"$&'(),;<=>?@\[\\\]^`{|}])/g, '\\$1');
+    return String(s).replace(/([#!$&'(),;<=>?@\[\\\]^`{|}])/g, '\\$1');
   }).join(' ');
 };
 //
@@ -40,9 +42,6 @@ let archiveTypePattern = /: [A-Z,7]*$/g;
 
 let escapeFileName = function (s) {
   return '"' + s + '"';
-  //if (isWindows()) return '"'+s+'"';
-  //// '"'+cmd.replace(/(["\s'$`\\])/g,'\\$1')+'"'
-  //return s;
 };
 
 const isInt = function isInt(x) {
@@ -56,29 +55,32 @@ unpackAll.defaultListFilter = function (s) {
     !s.match(archiveTypePattern);
 };
 
-unpackAll.unpack = function (archiveFile, optionsTarget, unpackOnly = [], theOptions = {}) {
+export const unpack = unpackAll.unpack = function (archiveFile, optionsTarget, unpackOptions = {}, options) {
   return new when.promise((resolve, reject, progress) => {
-    let options = {
+    options = options || {
       forceOverwrite: true,
       noDirectory: true,
       quiet: true
     };
-    if (typeof optionsTarget === 'string') {
+    if (typeof optionsTarget == 'string') {
       options.targetDir = optionsTarget;
-      if (!unpackOnly)
-        return reject("Error: files or directory to extract form archive missing.");
-      options.files = unpackOnly;
-      options = Object.assign(options, theOptions);
+      if (typeof unpackOptions == 'string' || Array.isArray(unpackOptions))
+        options.files = unpackOptions;
+      else if (unpackOptions)
+        options = Object.assign(options, unpackOptions);
     } else if (optionsTarget) {
       options = optionsTarget;
     }
 
-    if (!archiveFile) archiveFile = options.archiveFile;
-    if (!archiveFile) return reject("Error: archiveFile or options.archiveFile missing.");
+    if (!archiveFile)
+      archiveFile = options.archiveFile;
+    if (!archiveFile)
+      return reject("Error: archiveFile or options.archiveFile missing.");
 
     // Unar command:
     let unar = options.unar;
-    if (!unar) unar = (process.platform != "linux") ? path.join(__dirname, 'unar') : 'unar';
+    if (!unar)
+      unar = (process.platform != "linux") ? join(__dirname, 'unar') : 'unar';
     let ar = [unar];
 
     // Archive file (source):
@@ -88,32 +90,41 @@ unpackAll.unpack = function (archiveFile, optionsTarget, unpackOnly = [], theOpt
     // -output-directory (-o) <string>: The directory to write the contents of the archive to. Defaults to the current directory.
     ar.push('-o');
     let targetDir = options.targetDir;
-    if (!targetDir) targetDir = path.join(process.cwd(), 'tmp');
+    if (!targetDir)
+      targetDir = join(process.cwd(), 'tmp');
     ar.push(targetDir);
 
     // -force-overwrite (-f): Always overwrite files when a file to be unpacked already exists on disk. By default, the program asks the user if possible, otherwise skips the file.
-    if (options.forceOverwrite) ar.push('-f');
+    if (options.forceOverwrite)
+      ar.push('-f');
 
     // -force-rename (-r): Always rename files when a file to be unpacked already exists on disk.
-    if (options.forceRename) ar.push('-r');
+    if (options.forceRename)
+      ar.push('-r');
 
     // -force-skip (-s): Always skip files when a file to be unpacked already exists on disk.
-    if (options.forceSkip) ar.push('-s');
+    if (options.forceSkip)
+      ar.push('-s');
 
     // -force-directory (-d): Always create a containing directory for the contents of the unpacked archive. By default, a directory is created if there is more than one top-level file or folder.
-    if (options.forceDirectory) ar.push('-d');
+    if (options.forceDirectory)
+      ar.push('-d');
 
     // -no-directory (-D): Never create a containing directory for the contents of the unpacked archive.
-    if (options.noDirectory) ar.push('-D');
+    if (options.noDirectory)
+      ar.push('-D');
 
     // -no-recursion (-nr): Do not attempt to extract archives contained in other archives. For instance, when unpacking a .tar.gz file, only unpack the .gz file and not its contents.
-    if (options.noRecursion) ar.push('-nr');
+    if (options.noRecursion)
+      ar.push('-nr');
 
     // -copy-time (-t): Copy the file modification time from the archive file to the containing directory, if one is created.
-    if (options.copyTime) ar.push('-t');
+    if (options.copyTime)
+      ar.push('-t');
 
     // -quiet (-q): Run in quiet mode.
-    if (options.quiet) ar.push('-q');
+    if (options.quiet)
+      ar.push('-q');
 
     // -password (-p) <string>: The password to use for decrypting protected archives.
     if (options.password) {
@@ -145,47 +156,55 @@ unpackAll.unpack = function (archiveFile, optionsTarget, unpackOnly = [], theOpt
     } else if (options.files) {
       if (Array.isArray(options.files)) {
         options.files.forEach(function (s) {
-          ar.push(s);
+          ar.push(escapeFileName(s));
         });
       } else {
-        ar.push(options.files);
+        ar.push(escapeFileName(options.files));
       }
     }
 
-    if (!options.quiet) console.info('command', quote(ar));
+    if (!options.quiet)
+      console.info('command', quote(ar));
 
     let cmd = quote(ar).replace('SOURCEFILE', escapeFileName(archiveFile));
-    if (!options.quiet) console.info('cmd', cmd);
+    if (!options.quiet)
+      console.info('cmd', cmd);
     exec(cmd, function (err, stdout, stderr) {
       if (err || (stderr && stderr.length > 0))
-        return reject('Error: ' + (stderr || err));
+        return reject('Error: ' + (err || stderr));
 
-      progress(stdout);
       if (stdout && stdout.length > 0 && (stdout.indexOf('No files extracted') > -1)) {
         return reject('Error: No files extracted');
       }
-      resolve(targetDir);
+
+      progress(stdout);
+      return resolve(targetDir);
     });
   }); // unpackAll.unpack
 }
 
-unpackAll.list = function (archiveFile, options) {
-  return new when.promise((resolve, reject, progress) => {
-    if (!archiveFile) archiveFile = options.archiveFile;
-    if (!archiveFile) return reject("Error: archiveFile or options.archiveFile missing.");
+export const list = unpackAll.list = function (archiveFile, options) {
+  return new Promise((resolve, reject) => {
+    if (!archiveFile)
+      archiveFile = options.archiveFile;
+    if (!archiveFile)
+      return reject("Error: archiveFile or options.archiveFile missing.");
 
-    if (!options) options = {};
+    if (!options)
+      options = {};
 
-    // Usar command:
+    // lsar command:
     let lsar = options.lsar;
-    if (!lsar) lsar = (process.platform != "linux") ? path.join(__dirname, 'lsar') : 'lsar';
+    if (!lsar)
+      lsar = (process.platform != "linux") ? join(__dirname, 'lsar') : 'lsar';
     let ar = [lsar];
 
     // Archive file (source):
     ar.push('SOURCEFILE');
 
     // -no-recursion (-nr): Do not attempt to extract archives contained in other archives. For instance, when unpacking a .tar.gz file, only unpack the .gz file and not its contents.
-    if (options.noRecursion) ar.push('-nr');
+    if (options.noRecursion)
+      ar.push('-nr');
 
     // -password (-p) <string>: The password to use for decrypting protected archives.
     if (options.password) {
@@ -211,31 +230,32 @@ unpackAll.list = function (archiveFile, options) {
     }
 
     // -json (-j): Print the listing in JSON format.
-    if (options.json) ar.push('-j');
+    if (options.json)
+      ar.push('-j');
 
     // -json-ascii (-ja): Print the listing in JSON format, encoded as pure ASCII text.
-    if (options.jsonAscii) ar.push('-ja');
+    if (options.jsonAscii)
+      ar.push('-ja');
 
     let cmd = quote(ar).replace('SOURCEFILE', escapeFileName(archiveFile));
-    if (!options.quiet) console.info('cmd', cmd);
+    if (!options.quiet)
+      console.info('cmd', cmd);
     exec(cmd, function (err, stdout, stderr) {
       if (err || (stderr && stderr.length > 0))
-        return reject('Error: ' + (stderr || err));
+        return reject('Error: ' + (err || stderr));
 
-      progress(stdout);
       let lines = stdout.split(/(\r?\n)/g);
       if (lines.length > 0) {
         let files = lines.filter(unpackAll.defaultListFilter);
         if (lines[2])
           return resolve(files);
-
-        return reject('Error: no files found in archive. ' + stderr);
       }
+
+      return reject('Error: no files found in archive. ' + stderr);
     });
   }); // unpackAll.list
 }
 
 function unpackAll() { }
 
-module.exports = exports = unpackAll;
-exports.default = exports;
+export default unpackAll;

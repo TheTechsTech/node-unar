@@ -1,31 +1,27 @@
-node-unar
-=======
+# node-unar
 
 [![NPM](https://nodei.co/npm/node-unar.png)](https://nodei.co/npm/node-unar/)
 
-[![Dependencies Status][david-image]][david-url] [![Node.js CI](https://github.com/techno-express/node-unar/workflows/Node.js%20CI/badge.svg)](https://github.com/techno-express/node-unar/actions) [![codecov](https://codecov.io/gh/techno-express/node-unar/branch/master/graph/badge.svg?token=d9L7TvbndH)](https://codecov.io/gh/techno-express/node-unar) [![Maintainability][codeclimate-image]][codeclimate-url][![Release][npm-image]][npm-url]
+[![Dependencies Status][david-image]][david-url] [![Node.js CI](https://github.com/techno-express/node-unar/workflows/Node.js%20CI/badge.svg)](https://github.com/techno-express/node-unar/actions) [![codecov](https://codecov.io/gh/techno-express/node-unar/branch/main/graph/badge.svg?token=d9L7TvbndH)](https://codecov.io/gh/techno-express/node-unar) [![Maintainability][codeclimate-image]][codeclimate-url][![Release][npm-image]][npm-url]
 
-> Wrapper for [unar and lsar](http://unarchiver.c3.cx/commandline) command line tool.
-It allows you to unpack a lot of formats: zip, zipx, rar, 7z, tar, gzip, bzip2, lzma, cab, msi, cpio,... [complete list](http://unarchiver.c3.cx/formats)
-
-## Installation
-
+> ESM front-end to **unar** and **lsar** a command line tool. The universal [un-archiver/unpacker](http://unarchiver.c3.cx/commandline) to alot of formats: `.zip, zipx, rar, 7z, tar, gzip, bzip2, lzma, cab, msi, cpio, xar, exe`, [etc...](http://unarchiver.c3.cx/formats).
 
 ## Usage
 
 ```js
-// CommonJS
-const unar = require('node-unar');
-const list = unar.list;
-const unpack = unar.unpack;
-
 //ESM Node JS v12+
-import  { list, unpack } from 'node-unar';
+import { list, unpack } from 'node-unar';
 
 // list only:
-list(archiveFile<String>, options<Object>, callback<function>)
+list(archiveFile, options)
+  .then()
+  .catch();
+
 // unpack:
-unpack(archiveFile<String>, options<Object>, callback<function>)
+unpack(archiveFile, options)
+  .progress()
+  .then()
+  .catch();
 ```
 
 ### Examples
@@ -33,30 +29,37 @@ unpack(archiveFile<String>, options<Object>, callback<function>)
 #### Example: unpack file
 
 ```js
-// CommonJS
-const unar = require('node-unar');
-const unpack = unar.unpack;
-
 //ESM Node JS v12+
 import  { unpack } from 'node-unar';
 
 unpack('test/abc.rar', {
     targetDir: 'out'
-}, function(err, files, text) {
-   if (err) return console.error(err);
-   if (files) console.log('files', files);
-   if (text) console.log('text', text);
+  })
+  .progress((text) => {
+    console.log('text', text);
+  })
+  .then((files) => {
+    console.log('files', files);
+  })
+  .catch((err) => {
+    console.error(err);
+  });
 });
 ```
 
 #### Example: list content
 
 ```js
-function cb(err, files, text) {
-    if (err) return console.error(err);
+//ESM Node JS v12+
+import { list } from 'node-unar';
+
+list('test/abc.rar')
+  .then((files) => {
     console.log('files', files);
-}
-require('node-unar').list('test/abc.rar', {}, cb);
+  })
+  .catch((err) => {
+    console.error(err);
+  });
 ```
 
 ### Options
