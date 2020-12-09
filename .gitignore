@@ -1,0 +1,5 @@
+
+*.tgz
+*.exe
+*.dll
+node_modules

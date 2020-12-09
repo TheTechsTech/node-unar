@@ -1,0 +1,65 @@
+{
+  "name": "all-unpacker",
+  "version": "1.0.0",
+  "description": "All unpacker for zip, zipx, rar, 7z, tar, gzip, bzip2, lzma,... See theunarchiver.com for complete list, wrapper for unar and lsar.",
+  "keywords": [
+    "Unarchiver",
+    "Unpacker",
+    "Zip",
+    "Zipx",
+    "RAR",
+    "7z",
+    "Tar",
+    "Gzip",
+    "Bzip2",
+    "LZMA, XZ",
+    "Mac OS X",
+    "Windows",
+    "Linux",
+    "Apple"
+  ],
+  "author": {
+    "name": "Marc Kronberg",
+    "email": "krocon@gmail.com",
+    "url": "http://www.krocon.de"
+  },
+  "contributors": [
+    "l. stubbs <technoexpressnet@gmail.com>"
+  ],
+  "type": "commonjs",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./module": "./index.mjs"
+  },
+  "scripts": {
+    "test": "mocha --recursive test/",
+    "coverage": "npx nyc@latest --reporter json --reporter text mocha -R list test/*.js && npx codecov -f coverage/coverage-final.json",
+    "install": "node installer.mjs"
+  },
+  "files": [
+    "*.js",
+    "*.md"
+  ],
+  "optionalDependencies": {
+    "node-wget-fetch": "^1.1.0",
+    "system-installer": "^1.1.5",
+    "node-stream-zip": "^1.12.0",
+    "fs-extra": "^9.0.1",
+    "when": "^3.7.8"
+  },
+  "readmeFilename": "README.md",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/techno-express/node-unpack-all/issues"
+  },
+  "homepage": "https://github.com/techno-express/node-unpack-all.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/techno-express/node-unpack-all"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^7.2.0"
+  }
+}
