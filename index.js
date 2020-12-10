@@ -36,7 +36,6 @@ function quote(xs) {
     return String(s).replace(/([#!$&'(),;<=>?@\[\\\]^`{|}])/g, '\\$1');
   }).join(' ');
 };
-//
 
 let archiveTypePattern = /: [A-Z,7]*$/g;
 
@@ -48,14 +47,14 @@ const isInt = function isInt(x) {
   return !isNaN(x) && eval(x).toString().length == parseInt(eval(x)).toString().length;
 };
 
-unar.defaultListFilter = function (s) {
+Unar.defaultListFilter = function (s) {
   return s && s != '' &&
     s.indexOf('\r') == -1 &&
     s.indexOf('\n') == -1 &&
     !s.match(archiveTypePattern);
 };
 
-export const unpack = unar.unpack = function (archiveFile, optionsTarget, unpackOptions = {}, options) {
+export const unpack = Unar.unpack = function (archiveFile, optionsTarget, unpackOptions = {}, options) {
   return new when.promise((resolve, reject, progress) => {
     options = options || {
       forceOverwrite: true,
@@ -173,7 +172,7 @@ export const unpack = unar.unpack = function (archiveFile, optionsTarget, unpack
       }
 
       let lines = stdout.split(/(\r?\n)/g);
-      lines.filter(unar.defaultListFilter);
+      lines.filter(Unar.defaultListFilter);
       lines.shift();
       lines.pop();
       lines.pop();
@@ -196,7 +195,7 @@ export const unpack = unar.unpack = function (archiveFile, optionsTarget, unpack
   }); // unar.unpack
 }
 
-export const list = unar.list = function (archiveFile, options) {
+export const list = Unar.list = function (archiveFile, options) {
   return new Promise((resolve, reject) => {
     if (!archiveFile)
       archiveFile = options.archiveFile;
@@ -259,7 +258,7 @@ export const list = unar.list = function (archiveFile, options) {
 
       let lines = stdout.split(/(\r?\n)/g);
       if (lines.length > 0) {
-        let files = lines.filter(unar.defaultListFilter);
+        let files = lines.filter(Unar.defaultListFilter);
         if (lines[2]) {
           files.shift();
           return resolve(files);
@@ -271,6 +270,6 @@ export const list = unar.list = function (archiveFile, options) {
   }); // unar.list
 }
 
-function unar() { }
+function Unar() { }
 
-export default unar;
+export default Unar;

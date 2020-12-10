@@ -1,6 +1,7 @@
 'use strict';
 
 import chai from 'chai';
+import Unar from '../index.js';
 import { list, unpack } from '../index.js';
 
 const expect = chai.expect,
@@ -156,4 +157,17 @@ describe('Method: `unpack` only', function () {
       });
   });
 
+});
+
+describe('Function: `Unar`', function () {
+  it('should instanced itself like a class', function () {
+    const unar = new Unar();
+    expect(unar).to.be.an.instanceof(Unar);
+  });
+
+  it('should respond to commands as methods', function () {
+    expect(Unar).itself.to.respondTo('defaultListFilter');
+    expect(Unar).itself.to.respondTo('unpack');
+    expect(Unar).itself.to.respondTo('list');
+  });
 });
