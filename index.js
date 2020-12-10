@@ -78,10 +78,7 @@ export const unpack = unar.unpack = function (archiveFile, optionsTarget, unpack
       return reject("Error: archiveFile or options.archiveFile missing.");
 
     // Unar command:
-    let unar = options.unar;
-    if (!unar)
-      unar = (process.platform != "linux") ? join(__dirname, 'unar') : 'unar';
-    let ar = [unar];
+    let ar = [(process.platform != "linux") ? join(__dirname, 'unar') : 'unar'];
 
     // Archive file (source):
     ar.push('SOURCEFILE');
