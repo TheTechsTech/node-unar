@@ -167,8 +167,9 @@ export const unpack = unar.unpack = function (archiveFile, optionsTarget, unpack
       if (err || (stderr && stderr.length > 0))
         return reject('Error: ' + (err || stderr));
 
-      if (stdout && stdout.length > 0 && (stdout.indexOf('No files extracted') > -1)) {
-        return reject('Error: No files extracted');
+      if (stdout && stdout.length > 0) {
+        if (stdout.indexOf('No files extracted') > -1)
+          return reject('Error: No files extracted');
       }
 
       let lines = stdout.split(/(\r?\n)/g);
@@ -186,7 +187,6 @@ export const unpack = unar.unpack = function (archiveFile, optionsTarget, unpack
       });
 
       if (stdout === []) {
-        console.log('--> should not be displayed <--')
         return reject('Error: No files extracted');
       }
 
