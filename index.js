@@ -180,9 +180,9 @@ export const unpack = unar.unpack = function (archiveFile, optionsTarget, unpack
 
       stdout = [];
       lines.forEach((byFile) => {
-        let file = byFile.split('  ')[1];
-        if (file)
-          stdout.push(file);
+        byFile = byFile.split('  ')[1];
+        if (byFile)
+          stdout.push(byFile);
       });
 
       if (!stdout)
