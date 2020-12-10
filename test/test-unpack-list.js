@@ -86,7 +86,6 @@ describe('Method: `unpack`', function () {
         done();
       })
       .catch((err) => {
-        console.log('should be displayed - ' + err);
         expect(err).to.be.a('string');
         done();
       });
