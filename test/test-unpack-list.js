@@ -11,12 +11,12 @@ const expect = chai.expect,
     indexes: [0],
     forceOverwrite: true,
     noDirectory: true,
-    quiet: false
+    quiet: true
   };
 
 describe('Method: `list`', function () {
   it('should return an error on lsar error', function (done) {
-    list('??', options)
+    list('??', { targetDir: 'tmp', quiet: false })
       .catch((err) => {
         expect(err).to.be.a('string');
         done();
@@ -110,7 +110,7 @@ describe('Method: `unpack`', function () {
       quiet: false
     })
       .progress((text) => {
-        expect(text).to.be.a('string');
+        expect(text).to.be.a('array');
         done();
       });
   });
@@ -118,7 +118,7 @@ describe('Method: `unpack`', function () {
   it('should return output on fulfill `options` null', function (done) {
     unpack(archive, null)
       .progress((text) => {
-        expect(text).to.be.a('string');
+        expect(text).to.be.a('array');
         done();
       });
   });
@@ -129,7 +129,7 @@ describe('Method: `unpack` only', function () {
   it('should return output on progress', function (done) {
     unpack(archive, 'tmp', 'attr/read-only file.txt')
       .progress((data) => {
-        expect(data).to.be.a('string');
+        expect(data).to.be.a('array');
         done();
       });
   });

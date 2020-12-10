@@ -48,14 +48,14 @@ const isInt = function isInt(x) {
   return !isNaN(x) && eval(x).toString().length == parseInt(eval(x)).toString().length;
 };
 
-unpackAll.defaultListFilter = function (s) {
+unar.defaultListFilter = function (s) {
   return s && s != '' &&
     s.indexOf('\r') == -1 &&
     s.indexOf('\n') == -1 &&
     !s.match(archiveTypePattern);
 };
 
-export const unpack = unpackAll.unpack = function (archiveFile, optionsTarget, unpackOptions = {}, options) {
+export const unpack = unar.unpack = function (archiveFile, optionsTarget, unpackOptions = {}, options) {
   return new when.promise((resolve, reject, progress) => {
     options = options || {
       forceOverwrite: true,
@@ -91,7 +91,7 @@ export const unpack = unpackAll.unpack = function (archiveFile, optionsTarget, u
     ar.push('-o');
     let targetDir = options.targetDir;
     if (!targetDir)
-      targetDir = join(process.cwd(), 'tmp');
+      targetDir = process.cwd();
     ar.push(targetDir);
 
     // -force-overwrite (-f): Always overwrite files when a file to be unpacked already exists on disk. By default, the program asks the user if possible, otherwise skips the file.
@@ -163,9 +163,6 @@ export const unpack = unpackAll.unpack = function (archiveFile, optionsTarget, u
       }
     }
 
-    if (!options.quiet)
-      console.info('command', quote(ar));
-
     let cmd = quote(ar).replace('SOURCEFILE', escapeFileName(archiveFile));
     if (!options.quiet)
       console.info('cmd', cmd);
@@ -177,13 +174,27 @@ export const unpack = unpackAll.unpack = function (archiveFile, optionsTarget, u
         return reject('Error: No files extracted');
       }
 
+      let lines = stdout.split(/(\r?\n)/g);
+      lines.filter(unar.defaultListFilter);
+      lines.shift();
+      lines.pop();
+      lines.pop();
+      lines.pop();
+
+      stdout = [];
+      lines.forEach((byFile) => {
+        let file = byFile.split('  ')[1];
+        if (file)
+          stdout.push(file);
+      });
+
       progress(stdout);
       return resolve(targetDir);
     });
-  }); // unpackAll.unpack
+  }); // unar.unpack
 }
 
-export const list = unpackAll.list = function (archiveFile, options) {
+export const list = unar.list = function (archiveFile, options) {
   return new Promise((resolve, reject) => {
     if (!archiveFile)
       archiveFile = options.archiveFile;
@@ -246,16 +257,18 @@ export const list = unpackAll.list = function (archiveFile, options) {
 
       let lines = stdout.split(/(\r?\n)/g);
       if (lines.length > 0) {
-        let files = lines.filter(unpackAll.defaultListFilter);
-        if (lines[2])
+        let files = lines.filter(unar.defaultListFilter);
+        if (lines[2]) {
+          files.shift();
           return resolve(files);
+        }
       }
 
       return reject('Error: no files found in archive. ' + stderr);
     });
-  }); // unpackAll.list
+  }); // unar.list
 }
 
-function unpackAll() { }
+function unar() { }
 
-export default unpackAll;
+export default unar;

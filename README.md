@@ -2,9 +2,9 @@
 
 [![NPM](https://nodei.co/npm/node-unar.png)](https://nodei.co/npm/node-unar/)
 
-[![Dependencies Status][david-image]][david-url] [![Node.js CI](https://github.com/techno-express/node-unar/workflows/Node.js%20CI/badge.svg)](https://github.com/techno-express/node-unar/actions) [![codecov](https://codecov.io/gh/techno-express/node-unar/branch/main/graph/badge.svg?token=d9L7TvbndH)](https://codecov.io/gh/techno-express/node-unar) [![Maintainability][codeclimate-image]][codeclimate-url][![Release][npm-image]][npm-url]
+[![Dependencies Status][david-image]][david-url] [![Node.js CI](https://github.com/techno-express/node-unar/workflows/Node.js%20CI/badge.svg)](https://github.com/techno-express/node-unar/actions) [![codecov](https://codecov.io/gh/techno-express/node-unar/branch/main/graph/badge.svg?token=1HI1BHK6B2)](https://codecov.io/gh/techno-express/node-unar) [![Maintainability][codeclimate-image]][codeclimate-url][![Release][npm-image]][npm-url]
 
-> ESM front-end to **unar** and **lsar** a command line tool. The universal [un-archiver/unpacker](http://unarchiver.c3.cx/commandline) to alot of formats: `.zip, zipx, rar, 7z, tar, gzip, bzip2, lzma, cab, msi, cpio, xar, exe`, [etc...](http://unarchiver.c3.cx/formats).
+> ESM front-end to **unar** and **lsar** a command line tool. The universal [un-archiver/unpacker](http://unarchiver.c3.cx/commandline) to a lot of formats: `.zip, zipx, rar, 7z, tar, gzip, bzip2, lzma, cab, msi, cpio, xar, exe`, [etc...](http://unarchiver.c3.cx/formats).
 
 ## Usage
 
@@ -14,14 +14,28 @@ import { list, unpack } from 'node-unar';
 
 // list only:
 list(archiveFile, options)
-  .then()
-  .catch();
+  .then((fileListArray) => {
+  })
+  .catch((anyError) => {
+  });;
 
 // unpack:
 unpack(archiveFile, options)
-  .progress()
-  .then()
-  .catch();
+  .progress((fileListArray) => {
+  })
+  .then((outputDirectory) => {
+  })
+  .catch((anyError) => {
+  });
+
+// unpack: only requested files/directories
+unpack(archiveFile, outputDirectory, file | [files], options)
+  .progress((fileListArray) => {
+  })
+  .then((outputDirectory) => {
+  })
+  .catch((anyError) => {
+  });
 ```
 
 ### Examples
@@ -32,14 +46,12 @@ unpack(archiveFile, options)
 //ESM Node JS v12+
 import  { unpack } from 'node-unar';
 
-unpack('test/abc.rar', {
-    targetDir: 'out'
-  })
-  .progress((text) => {
-    console.log('text', text);
-  })
-  .then((files) => {
+unpack('test/abc.rar', 'out')
+  .progress((files) => {
     console.log('files', files);
+  })
+  .then((targetDirectory) => {
+    console.log('directory', './out/');
   })
   .catch((err) => {
     console.error(err);
