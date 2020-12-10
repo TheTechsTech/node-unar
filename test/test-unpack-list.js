@@ -76,16 +76,17 @@ describe('Method: `unpack`', function () {
   it('should return an error on archive have no files or nothing extracted', function (done) {
     unpack(archiveBlank, options)
       .progress((files) => {
-        console.log('should not be displayed' + files);
+        console.log('should not be displayed ' + files);
         //expect(directory).to.be.a('string');
         //done();
       })
       .then((directory) => {
-        console.log('should not be displayed' + directory);
+        console.log('should not be displayed ' + directory);
         //expect(directory).to.be.a('string');
         done();
       })
       .catch((err) => {
+        console.log('should be displayed - ' + err);
         expect(err).to.be.a('string');
         done();
       });

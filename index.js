@@ -185,8 +185,10 @@ export const unpack = unar.unpack = function (archiveFile, optionsTarget, unpack
           stdout.push(byFile);
       });
 
-      if (!stdout)
+      if (stdout === []) {
+        console.log('--> should not be displayed <--')
         return reject('Error: No files extracted');
+      }
 
       progress(stdout);
       return resolve(targetDir);
