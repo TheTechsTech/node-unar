@@ -186,7 +186,7 @@ export const unpack = unar.unpack = function (archiveFile, optionsTarget, unpack
           stdout.push(byFile);
       });
 
-      if (stdout == [] || lines.length == 0) {
+      if (stdout === []) {
         return reject('Error: No files extracted');
       }
 
