@@ -75,6 +75,16 @@ describe('Method: `unpack`', function () {
 
   it('should return an error on archive have no files or nothing extracted', function (done) {
     unpack(archiveBlank, options)
+      .progress((files) => {
+        console.log('should not be displayed' + files);
+        //expect(directory).to.be.a('string');
+        //done();
+      })
+      .then((directory) => {
+        console.log('should not be displayed' + directory);
+        //expect(directory).to.be.a('string');
+        done();
+      })
       .catch((err) => {
         expect(err).to.be.a('string');
         done();
@@ -88,16 +98,16 @@ describe('Method: `unpack`', function () {
       noDirectory: true,
       quiet: false
     })
-      .then((files) => {
-        expect(files).to.be.a('string');
+      .then((directory) => {
+        expect(directory).to.be.a('string');
         done();
       });
   });
 
   it('should output each file extracted `options` null', function (done) {
     unpack(archive, null)
-      .then((files) => {
-        expect(files).to.be.a('string');
+      .then((directory) => {
+        expect(directory).to.be.a('string');
         done();
       });
   });
@@ -109,16 +119,16 @@ describe('Method: `unpack`', function () {
       noDirectory: true,
       quiet: false
     })
-      .progress((text) => {
-        expect(text).to.be.a('array');
+      .progress((files) => {
+        expect(files).to.be.a('array');
         done();
       });
   });
 
   it('should return output on fulfill `options` null', function (done) {
     unpack(archive, null)
-      .progress((text) => {
-        expect(text).to.be.a('array');
+      .progress((files) => {
+        expect(files).to.be.a('array');
         done();
       });
   });
@@ -128,8 +138,8 @@ describe('Method: `unpack` only', function () {
 
   it('should return output on progress', function (done) {
     unpack(archive, 'tmp', 'attr/read-only file.txt')
-      .progress((data) => {
-        expect(data).to.be.a('array');
+      .progress((files) => {
+        expect(files).to.be.a('array');
         done();
       });
   });
@@ -140,8 +150,8 @@ describe('Method: `unpack` only', function () {
         expect(files).to.not.contain('system file.txt');
         expect(files).to.contain('read-only file.txt');
         expect(files).to.contain('normal file.txt');
-      }).then((target) => {
-        expect(target).to.be.a('string');
+      }).then((directory) => {
+        expect(directory).to.be.a('string');
         done();
       });
   });
