@@ -42,6 +42,7 @@
     "*.md"
   ],
   "optionalDependencies": {
+    "cross-spawn": "^7.0.3",
     "node-wget-fetch": "^1.1.0",
     "system-installer": "^1.1.5",
     "node-stream-zip": "^1.12.0",

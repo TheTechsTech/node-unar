@@ -76,44 +76,13 @@ describe('Method: `unpack`', function () {
 
   it('should return an error on archive have no files or nothing extracted', function (done) {
     unpack(archiveBlank, options)
-      .progress((files) => {
-        console.log('should not be displayed ' + files);
-        //expect(directory).to.be.a('string');
-        //done();
-      })
-      .then((directory) => {
-        console.log('should not be displayed ' + directory);
-        //expect(directory).to.be.a('string');
-        done();
-      })
       .catch((err) => {
         expect(err).to.be.a('string');
         done();
       });
   });
 
-  it('should output each file extracted', function (done) {
-    unpack(archive, {
-      targetDir: 'tmp',
-      forceOverwrite: true,
-      noDirectory: true,
-      quiet: false
-    })
-      .then((directory) => {
-        expect(directory).to.be.a('string');
-        done();
-      });
-  });
-
-  it('should output each file extracted `options` null', function (done) {
-    unpack(archive, null)
-      .then((directory) => {
-        expect(directory).to.be.a('string');
-        done();
-      });
-  });
-
-  it('should return output on fulfill', function (done) {
+  it('should output on progress with `files`, target `directory`, archive `type` extracted on success', function (done) {
     unpack(archive, {
       targetDir: 'tmp',
       forceOverwrite: true,
@@ -121,15 +90,27 @@ describe('Method: `unpack`', function () {
       quiet: false
     })
       .progress((files) => {
-        expect(files).to.be.a('array');
+        expect(files).to.be.a('string');
+      })
+      .then((result) => {
+        expect(result).to.be.a('object');
+        expect(result.type).to.be.a('string');
+        expect(result.files).to.be.a('array');
+        expect(result.directory).to.be.a('string');
         done();
       });
   });
 
-  it('should return output on fulfill `options` null', function (done) {
+  it('should output `files`, target `directory`, archive `type` extracted `options` null', function (done) {
     unpack(archive, null)
       .progress((files) => {
-        expect(files).to.be.a('array');
+        expect(files).to.be.a('string');
+      })
+      .then((result) => {
+        expect(result).to.be.a('object');
+        expect(result.type).to.be.a('string');
+        expect(result.files).to.be.a('array');
+        expect(result.directory).to.be.a('string');
         done();
       });
   });
@@ -138,21 +119,22 @@ describe('Method: `unpack`', function () {
 describe('Method: `unpack` only', function () {
 
   it('should return output on progress', function (done) {
-    unpack(archive, 'tmp', 'attr/read-only file.txt')
-      .progress((files) => {
-        expect(files).to.be.a('array');
+    unpack(archive, 'tmp', 'attr/system file.txt')
+      .then((result) => {
+        expect(result.files).to.contain('attr/system file.txt');
+        expect(result.files).to.not.contain('att/normal file.txt');
         done();
       });
   });
 
-  it('should not output any other file than what is supplied on progress and successful', function (done) {
-    unpack(archive, 'tmp', ['attr/normal file.txt', 'attr/read-only file.txt'], { quiet: false })
+  it('should not output any other file than what is supplied successful', function (done) {
+    unpack(archive, 'tmp', ['attr/normal file.txt', 'attr/read-only file.txt'])
       .progress((files) => {
-        expect(files).to.not.contain('system file.txt');
-        expect(files).to.contain('read-only file.txt');
-        expect(files).to.contain('normal file.txt');
-      }).then((directory) => {
-        expect(directory).to.be.a('string');
+        expect(files).to.be.a('string');
+      }).then((result) => {
+        expect(result.files).to.not.contain('system file.txt');
+        expect(result.files).to.contain('attr/read-only file.txt');
+        expect(result.files).to.contain('attr/normal file.txt');
         done();
       });
   });
