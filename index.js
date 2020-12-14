@@ -4,6 +4,7 @@
 // unar and lsar
 import { dirname, join } from 'path';
 import { exec } from 'child_process';
+import spawn from 'cross-spawn';
 import when from 'when';
 import { fileURLToPath } from 'url';
 
@@ -61,14 +62,15 @@ export const unpack = Unar.unpack = function (archiveFile, optionsTarget, unpack
       noDirectory: true,
       quiet: true
     };
-    if (typeof optionsTarget == 'string') {
+    if (typeof optionsTarget === 'string') {
       options.targetDir = optionsTarget;
-      if (typeof unpackOptions == 'string' || Array.isArray(unpackOptions))
+      if (typeof unpackOptions === 'string' || Array.isArray(unpackOptions))
         options.files = unpackOptions;
-      else if (unpackOptions)
+      else if (typeof optionsOptions === 'object')
         options = Object.assign(options, unpackOptions);
-    } else if (optionsTarget) {
-      options = optionsTarget;
+      options.quiet = false;
+    } else if (typeof optionsTarget === 'object') {
+      options = Object.assign(options, optionsTarget);
     }
 
     if (!archiveFile)
@@ -80,8 +82,8 @@ export const unpack = Unar.unpack = function (archiveFile, optionsTarget, unpack
     let ar = [(process.platform != "linux") ? join(__dirname, 'unar') : 'unar'];
 
     // Archive file (source):
-    ar.push('SOURCEFILE');
-    //ar.push(archiveFile);
+    //ar.push('SOURCEFILE');
+    ar.push(archiveFile);
 
     // -output-directory (-o) <string>: The directory to write the contents of the archive to. Defaults to the current directory.
     ar.push('-o');
@@ -152,47 +154,74 @@ export const unpack = Unar.unpack = function (archiveFile, optionsTarget, unpack
     } else if (options.files) {
       if (Array.isArray(options.files)) {
         options.files.forEach(function (s) {
-          ar.push(escapeFileName(s));
+          ar.push(s);
         });
       } else {
-        ar.push(escapeFileName(options.files));
+        ar.push(options.files);
       }
     }
 
-    let cmd = quote(ar).replace('SOURCEFILE', escapeFileName(archiveFile));
-    if (!options.quiet)
-      console.info('cmd', cmd);
-    exec(cmd, function (err, stdout, stderr) {
-      if (err || (stderr && stderr.length > 0))
-        return reject('Error: ' + (err || stderr));
-
-      if (stdout && stdout.length > 0) {
-        if (stdout.indexOf('No files extracted') > -1)
-          return reject('Error: No files extracted');
-      }
-
-      let lines = stdout.split(/(\r?\n)/g);
-      lines.filter(Unar.defaultListFilter);
-      lines.shift();
-      lines.pop();
-      lines.pop();
-      lines.pop();
-
-      stdout = [];
-      lines.forEach((byFile) => {
-        byFile = byFile.split('  ')[1];
-        if (byFile)
-          stdout.push(byFile);
-      });
-
-      if (stdout === []) {
-        return reject('Error: No files extracted');
-      }
-
-      progress(stdout);
-      return resolve(targetDir);
-    });
+    let run = ar.shift();
+    return spawnUnar(run, ar, resolve, reject, progress);
   }); // unar.unpack
+}
+
+function spawnUnar(command, args, resolve, reject, progress) {
+  let files = [];
+  let type = '';
+  let directory = '';
+  let onResolve = null;
+  const child = spawn(command, args, {
+    stdio: 'pipe'
+  });
+
+  child.on('error', (err) => {
+    return reject(err);
+  });
+
+  child.on('close', () => {
+    return resolve(onResolve);
+  });
+
+  child.on('exit', () => {
+    return resolve(onResolve);
+  });
+
+  child.stdout.on('data', (data) => {
+    let file = null;
+    data = data.toString();
+    if (data.includes('No files extracted') || data.includes('Opening file failed')) {
+      child.kill('SIGKILL');
+      return reject('Error: No files extracted');
+    } else if (data) {
+      data = data.split(/(\r?\n)/g);
+      if (!data[0].includes('OK.'))
+        type = data[0];
+
+      if (data[0].includes('OK.') || type) {
+        data = data[2];
+        if (data) {
+          if (data.includes('Successfully')) {
+            directory = data.split('to "')[1];
+            directory = directory.split('"')[0];
+          } else {
+            file = data.split('  ')[1];
+            if (file)
+              files.push(file);
+          }
+        }
+      }
+
+      onResolve = { type: type, files: files, directory: directory };
+      if (file) {
+        return progress(file);
+      }
+    }
+  });
+
+  child.stderr.on('data', (data) => {
+    return reject(data.toString());
+  });
 }
 
 export const list = Unar.list = function (archiveFile, options) {
