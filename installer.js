@@ -6,8 +6,7 @@ import fs from 'fs-extra';
 import { join } from 'path';
 import StreamZip from 'node-stream-zip';
 import { wget } from "node-wget-fetch";
-import _installer from 'system-installer';
-const system_installer = _installer.installer;
+import { installer } from 'node-sys';
 
 const unarAppFile = (process.platform == "darwin") ? 'unarMac.zip' : 'unarWindows.zip';
 const unarAppUrl = 'https://cdn.theunarchiver.com/downloads/';
@@ -36,7 +35,7 @@ if ((process.platform == "win32") || (process.platform == "darwin")) {
       console.log(err);
     });
 } else {
-  system_installer('unar')
+  installer('unar')
     .then(function () {
       console.log('Unar installed successful');
     })
