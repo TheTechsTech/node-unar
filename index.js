@@ -59,8 +59,7 @@ export const unpack = Unar.unpack = function (archiveFile, optionsTarget, unpack
   return new when.promise((resolve, reject, progress) => {
     options = options || {
       forceOverwrite: true,
-      noDirectory: true,
-      quiet: true
+      noDirectory: true
     };
     if (typeof optionsTarget === 'string') {
       options.targetDir = optionsTarget;
@@ -68,11 +67,11 @@ export const unpack = Unar.unpack = function (archiveFile, optionsTarget, unpack
         options.files = unpackOptions;
       else if (typeof optionsOptions === 'object')
         options = Object.assign(options, unpackOptions);
-      options.quiet = false;
     } else if (typeof optionsTarget === 'object') {
       options = Object.assign(options, optionsTarget);
     }
 
+    options.quiet = false;
     if (!archiveFile)
       archiveFile = options.archiveFile;
     if (!archiveFile)
