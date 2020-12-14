@@ -21,18 +21,24 @@ list(archiveFile, options)
 
 // unpack:
 unpack(archiveFile, options)
-  .progress((fileListArray) => {
+  .progress((eachFle) => {
   })
-  .then((outputDirectory) => {
+  .then((results) => {
+    let type = results.type;
+    let fileList = results.files;
+    let outputDirectory = results.directory;
   })
   .catch((anyError) => {
   });
 
 // unpack: only requested files/directories
 unpack(archiveFile, outputDirectory, file | [files], options)
-  .progress((fileListArray) => {
+  .progress((eachFle) => {
   })
-  .then((outputDirectory) => {
+  .then((results) => {
+    let type = results.type;
+    let fileList = results.files;
+    let outputDirectory = results.directory;
   })
   .catch((anyError) => {
   });
@@ -50,8 +56,10 @@ unpack('test/abc.rar', 'out')
   .progress((files) => {
     console.log('files', files);
   })
-  .then((targetDirectory) => {
-    console.log('directory', './out/');
+  .then((results) => {
+    console.log('Archive type: ', results.type);
+    console.log('Archive files', results.files);
+    console.log('Archive output directory', results.directory);
   })
   .catch((err) => {
     console.error(err);
