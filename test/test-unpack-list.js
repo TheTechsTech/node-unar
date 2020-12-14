@@ -76,6 +76,12 @@ describe('Method: `unpack`', function () {
 
   it('should return an error on archive have no files or nothing extracted', function (done) {
     unpack(archiveBlank, options)
+      .progress((files) => {
+        console.log('progress should not display');
+      })
+      .then((result) => {
+        console.log('then should not display');
+      })
       .catch((err) => {
         expect(err).to.be.a('string');
         done();
@@ -112,6 +118,8 @@ describe('Method: `unpack`', function () {
         expect(result.files).to.be.a('array');
         expect(result.directory).to.be.a('string');
         done();
+      }).catch((err) => {
+        console.log(err);
       });
   });
 });
