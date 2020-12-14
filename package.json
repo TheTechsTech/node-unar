@@ -1,6 +1,6 @@
 {
   "name": "node-unar",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "ESM front-end to unar and lsar a command line tool. The universal un-archiver/unpacker to a lot of formats: .zip, zipx, rar, 7z, tar, gzip, bzip2, lzma, cab, msi, cpio, xar, exe, etc...",
   "keywords": [
     "un-archiver",
