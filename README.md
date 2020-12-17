@@ -6,6 +6,8 @@
 
 > ESM front-end to **unar** and **lsar** a command line tool. The universal [un-archiver/unpacker](http://unarchiver.c3.cx/commandline) to a lot of formats: `.zip, zipx, rar, 7z, tar, gzip, bzip2, lzma, cab, msi, cpio, xar, exe`, [etc...](http://unarchiver.c3.cx/formats).
 
+The necessary cli tool **lsar** and **unar**, will be downloaded to package directory at install time, for `Windows` amd `macOS`. If your host is `Linux`, [node-sys](https://github.com/techno-express/node-unar) will be used to install **unar** onto your system.
+
 ## Usage
 
 ```js
