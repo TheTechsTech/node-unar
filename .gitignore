@@ -4,3 +4,7 @@
 *.dll
 node_modules
 .vscode/settings.json
+unar
+lsar
+__MACOSX/._unar
+__MACOSX/._lsar
