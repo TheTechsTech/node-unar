@@ -3,8 +3,7 @@
 // see http://unarchiver.c3.cx/commandline
 // unar and lsar
 import { dirname, join } from 'path';
-import { exec } from 'child_process';
-import spawn from 'cross-spawn';
+import { exec, spawn } from 'child_process';
 import when from 'when';
 import { fileURLToPath } from 'url';
 

@@ -41,15 +41,15 @@
     "*.js",
     "*.md"
   ],
+  "dependencies": {
+    "when": "^3.7.8"
+  },
   "optionalDependencies": {
-    "cross-spawn": "^7.0.3",
     "node-wget-fetch": "^1.1.0",
     "node-sys": "^1.0.3",
     "node-stream-zip": "^1.12.0",
-    "fs-extra": "^9.0.1",
-    "when": "^3.7.8"
+    "fs-extra": "^9.0.1"
   },
-  "readmeFilename": "README.md",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/techno-express/node-unar/issues"
