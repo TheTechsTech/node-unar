@@ -48,6 +48,14 @@ describe('Method: `list`', function () {
       });
   });
 
+  it('should return list of files with a password', function (done) {
+    list(archive, { password: 123 })
+      .then((files) => {
+        expect(files).to.be.a('array');
+        done();
+      });
+  });
+
   it('should return list of files by index `options` null', function (done) {
     list(archive, null)
       .then((files) => {
@@ -76,12 +84,14 @@ describe('Method: `unpack`', function () {
 
   it('should return an error on archive have no files or nothing extracted', function (done) {
     unpack(archiveBlank, options)
-      .progress((files) => {
-        console.log('progress should not display');
-      })
-      .then((result) => {
-        console.log('then should not display');
-      })
+      .catch((err) => {
+        expect(err).to.be.a('string');
+        done();
+      });
+  });
+
+  it('should error on invalid index', function (done) {
+    unpack(archive, { password: 123, indexes: 1 })
       .catch((err) => {
         expect(err).to.be.a('string');
         done();
@@ -118,8 +128,14 @@ describe('Method: `unpack`', function () {
         expect(result.files).to.be.a('array');
         expect(result.directory).to.be.a('string');
         done();
-      }).catch((err) => {
-        console.log(err);
+      })
+  });
+
+  it('should return output to directory', function (done) {
+    unpack(archive, 'tmp', { password: 123 })
+      .then((result) => {
+        expect(result.directory).to.contain('tmp');
+        done();
       });
   });
 });

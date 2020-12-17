@@ -20,7 +20,7 @@ list(archiveFile, options)
   });;
 
 // unpack:
-unpack(archiveFile, options)
+unpack(archiveFile, options | outputDirectory)
   .progress((eachFle) => {
   })
   .then((results) => {

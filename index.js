@@ -65,7 +65,7 @@ export const unpack = Unar.unpack = function (archiveFile, optionsTarget, unpack
       options.targetDir = optionsTarget;
       if (typeof unpackOptions === 'string' || Array.isArray(unpackOptions))
         options.files = unpackOptions;
-      else if (typeof optionsOptions === 'object')
+      else if (typeof unpackOptions === 'object')
         options = Object.assign(options, unpackOptions);
     } else if (typeof optionsTarget === 'object') {
       options = Object.assign(options, optionsTarget);
@@ -148,7 +148,7 @@ export const unpack = Unar.unpack = function (archiveFile, optionsTarget, unpack
           ar.push('' + idx); // string!
         });
       } else if (isInt(options.indexes)) {
-        console.error('options.indexes must be an array of integer, but it is: ' + JSON.stringify(options.indexes))
+        return reject('options.indexes must be an array of integer, but it is: ' + JSON.stringify(options.indexes))
       }
     } else if (options.files) {
       if (Array.isArray(options.files)) {
@@ -172,10 +172,6 @@ function spawnUnar(command, args, resolve, reject, progress) {
   let onResolve = null;
   const child = spawn(command, args, {
     stdio: 'pipe'
-  });
-
-  child.on('error', (err) => {
-    return reject(err);
   });
 
   child.on('close', () => {
@@ -234,10 +230,7 @@ export const list = Unar.list = function (archiveFile, options) {
       options = {};
 
     // lsar command:
-    let lsar = options.lsar;
-    if (!lsar)
-      lsar = (process.platform != "linux") ? join(__dirname, 'lsar') : 'lsar';
-    let ar = [lsar];
+    let ar = [(process.platform != "linux") ? join(__dirname, 'lsar') : 'lsar'];
 
     // Archive file (source):
     ar.push('SOURCEFILE');
