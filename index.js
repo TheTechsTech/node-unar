@@ -26,9 +26,21 @@ Unar.defaultListFilter = function (s) {
  * Unar
  *
  * @param {String} archiveFile
- * @param {String} optionsTarget
- * @param {String|Array|Object} unpackOptions
- * @param {Object} options
+ * @param {String} optionsTarget The directory to write the contents of the archive to. Defaults to the current directory.
+ * - Otherwise, `command line options`.
+ * @param {String|Array|Object} unpackOptions Only unpack this list of files or directories.
+ * - Otherwise, `command line options`.
+ * @param {Object} options command line options
+ * - targetDir: `String` | The directory to write the contents of the archive to. Defaults to the current directory.
+ * - files: `String` | Only unpack this list of files or directories.
+ * - forceOverwrite: `true/false` (default) | if null, tmp dir will created automatically
+ * - forceDirectory: `true/false/undefined` | Always create a containing directory for the contents of the unpacked archive. By default, a directory is created if there is more than one top-level file or folder.
+ * - noDirectory: `true/false/undefined` | Never create a containing directory for the contents of the unpacked archive.
+ * - noRecursion: `true/false/undefined` | Do not attempt to extract archives contained in other archives. For instance, when unpacking a .tar.gz file, only unpack the .gz file and not its contents.
+ * - copyTime: `true/false/undefined` | Copy the file modification time from the archive file to the containing directory, if one is created.
+ * - password: `String` | The password to use for decrypting protected archives.
+ * - passwordEncoding: `String` | The encoding to use for the password for the archive, when it is not known. If not specified, then either the encoding given by the -encoding option or the auto-detected encoding is used.
+ * - encoding: `String` | The encoding to use for filenames in the archive, when it is not known. If not specified, the program attempts to auto-detect the encoding used. Use "help" or "list" as the argument to give
  *
  * @returns {Promise} Promise
  * @see http://unarchiver.c3.cx/commandline
