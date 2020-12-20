@@ -1,6 +1,6 @@
 {
   "name": "node-unar",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "ESM front-end to unar and lsar a command line tool. The universal un-archiver/unpacker to a lot of formats: .zip, zipx, rar, 7z, tar, gzip, bzip2, lzma, cab, msi, cpio, xar, exe, etc...",
   "keywords": [
     "un-archiver",
@@ -33,7 +33,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --recursive test/",
+    "test": "mocha --recursive test/ --timeout=0",
     "coverage": "npx c8 --reporter json --reporter text npm test && npx codecov -f coverage/coverage-final.json",
     "install": "node installer.js"
   },
@@ -46,7 +46,7 @@
   },
   "optionalDependencies": {
     "node-wget-fetch": "^1.1.0",
-    "node-sys": "^1.0.3",
+    "node-sys": "^1.0.6",
     "node-stream-zip": "^1.12.0",
     "fs-extra": "^9.0.1"
   },

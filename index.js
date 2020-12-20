@@ -1,47 +1,15 @@
 'use strict';
 
-// see http://unarchiver.c3.cx/commandline
-// unar and lsar
 import { dirname, join } from 'path';
-import { exec, spawn } from 'child_process';
 import when from 'when';
 import { fileURLToPath } from 'url';
+import { spawning } from 'node-sys';
 
 const __filename = fileURLToPath(
   import.meta.url);
 const __dirname = dirname(__filename);
-const hasOwn = Object.prototype.hasOwnProperty;
-
-/**
- * Create a new array by applying `callback` to each element in `xs`.
- *
- * @param {*} xs
- * @param {*} callback
- *
- * @returns Array
- */
-function array_map(xs, callback) {
-  if (xs.array_map) return xs.array_map(callback);
-  let res = [];
-  for (let i = 0; i < xs.length; i++) {
-    let x = xs[i];
-    if (hasOwn.call(xs, i)) res.push(callback(x, i, xs));
-  }
-
-  return res;
-};
-
-function quote(xs) {
-  return array_map(xs, function (s) {
-    return String(s).replace(/([#!$&'(),;<=>?@\[\\\]^`{|}])/g, '\\$1');
-  }).join(' ');
-};
 
 let archiveTypePattern = /: [A-Z,7]*$/g;
-
-let escapeFileName = function (s) {
-  return '"' + s + '"';
-};
 
 const isInt = function isInt(x) {
   return !isNaN(x) && eval(x).toString().length == parseInt(eval(x)).toString().length;
@@ -54,6 +22,17 @@ Unar.defaultListFilter = function (s) {
     !s.match(archiveTypePattern);
 };
 
+/**
+ * Unar
+ *
+ * @param {String} archiveFile
+ * @param {String} optionsTarget
+ * @param {String|Array|Object} unpackOptions
+ * @param {Object} options
+ *
+ * @returns {Promise} Promise
+ * @see http://unarchiver.c3.cx/commandline
+ */
 export const unpack = Unar.unpack = function (archiveFile, optionsTarget, unpackOptions = {}, options) {
   return new when.promise((resolve, reject, progress) => {
     options = options || {
@@ -160,64 +139,58 @@ export const unpack = Unar.unpack = function (archiveFile, optionsTarget, unpack
     }
 
     let run = ar.shift();
-    return spawnUnar(run, ar, resolve, reject, progress);
+    let files = [];
+    let type = '';
+    let directory = '';
+    const onprogress = (data) => {
+      let file = null;
+      data = data.output;
+      if (data.includes('No files extracted') || data.includes('Opening file failed')) {
+        child.kill('SIGKILL');
+        return reject('Error: No files extracted');
+      } else if (data) {
+        data = data.split(/(\r?\n)/g);
+        if (!data[0].includes('OK.'))
+          type = data[0];
+        if (data[0].includes('OK.') || type) {
+          data = data[2];
+          if (data) {
+            if (data.includes('Successfully')) {
+              directory = data.split('to "')[1];
+              directory = directory.split('"')[0];
+            } else {
+              file = data.split('  ')[1];
+              if (file)
+                files.push(file);
+            }
+          }
+        }
+        if (file) {
+          progress(file);
+        }
+        return { type: type, files: files, directory: directory };
+      }
+    };
+
+    return spawning(run, ar, onprogress)
+      .then((result) => {
+        return resolve(result);
+      })
+      .catch((err) => {
+        return reject(err);
+      });
   }); // unar.unpack
 }
 
-function spawnUnar(command, args, resolve, reject, progress) {
-  let files = [];
-  let type = '';
-  let directory = '';
-  let onResolve = null;
-  const child = spawn(command, args, {
-    stdio: 'pipe'
-  });
-
-  child.on('close', () => {
-    return resolve(onResolve);
-  });
-
-  child.on('exit', () => {
-    return resolve(onResolve);
-  });
-
-  child.stdout.on('data', (data) => {
-    let file = null;
-    data = data.toString();
-    if (data.includes('No files extracted') || data.includes('Opening file failed')) {
-      child.kill('SIGKILL');
-      return reject('Error: No files extracted');
-    } else if (data) {
-      data = data.split(/(\r?\n)/g);
-      if (!data[0].includes('OK.'))
-        type = data[0];
-
-      if (data[0].includes('OK.') || type) {
-        data = data[2];
-        if (data) {
-          if (data.includes('Successfully')) {
-            directory = data.split('to "')[1];
-            directory = directory.split('"')[0];
-          } else {
-            file = data.split('  ')[1];
-            if (file)
-              files.push(file);
-          }
-        }
-      }
-
-      onResolve = { type: type, files: files, directory: directory };
-      if (file) {
-        return progress(file);
-      }
-    }
-  });
-
-  child.stderr.on('data', (data) => {
-    return reject(data.toString());
-  });
-}
-
+/**
+ * Lsar
+ *
+ * @param {String} archiveFile
+ * @param {Object} options
+ *
+ * @returns {Promise} Promise
+ * @see http://unarchiver.c3.cx/commandline
+ */
 export const list = Unar.list = function (archiveFile, options) {
   return new Promise((resolve, reject) => {
     if (!archiveFile)
@@ -232,7 +205,8 @@ export const list = Unar.list = function (archiveFile, options) {
     let ar = [(process.platform != "linux") ? join(__dirname, 'lsar') : 'lsar'];
 
     // Archive file (source):
-    ar.push('SOURCEFILE');
+    //ar.push('SOURCEFILE');
+    ar.push(archiveFile);
 
     // -no-recursion (-nr): Do not attempt to extract archives contained in other archives. For instance, when unpacking a .tar.gz file, only unpack the .gz file and not its contents.
     if (options.noRecursion)
@@ -269,24 +243,22 @@ export const list = Unar.list = function (archiveFile, options) {
     if (options.jsonAscii)
       ar.push('-ja');
 
-    let cmd = quote(ar).replace('SOURCEFILE', escapeFileName(archiveFile));
-    if (!options.quiet)
-      console.info('cmd', cmd);
-    exec(cmd, function (err, stdout, stderr) {
-      if (err || (stderr && stderr.length > 0))
-        return reject('Error: ' + (err || stderr));
-
-      let lines = stdout.split(/(\r?\n)/g);
-      if (lines.length > 0) {
-        let files = lines.filter(Unar.defaultListFilter);
-        if (lines[2]) {
-          files.shift();
-          return resolve(files);
+    let run = ar.shift();
+    return spawning(run, ar)
+      .then((result) => {
+        let lines = result.split(/(\r?\n)/g);
+        if (lines.length > 0) {
+          let files = lines.filter(Unar.defaultListFilter);
+          if (lines[2]) {
+            files.shift();
+            return resolve(files);
+          }
         }
-      }
-
-      return reject('Error: no files found in archive. ' + stderr);
-    });
+        return reject('Error: no files found in ' + archiveFile + ' archive.');
+      })
+      .catch((err) => {
+        return reject('Error: ' + err);
+      });
   }); // unar.list
 }
 
