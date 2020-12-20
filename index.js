@@ -254,7 +254,8 @@ export const list = Unar.list = function (archiveFile, options) {
             return resolve(files);
           }
         }
-        return reject('Error: no files found in ' + archiveFile + ' archive.');
+
+        throw ('no files found in ' + archiveFile + ' archive.');
       })
       .catch((err) => {
         return reject('Error: ' + err);
