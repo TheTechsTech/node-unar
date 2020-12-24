@@ -3,7 +3,7 @@
 import { dirname, join } from 'path';
 import when from 'when';
 import { fileURLToPath } from 'url';
-import { spawning } from 'node-sys';
+import { isString, isArray, spawning, isObjectOnly, isLinux } from 'node-sys';
 
 const __filename = fileURLToPath(
   import.meta.url);
@@ -51,13 +51,13 @@ export const unpack = Unar.unpack = function (archiveFile, optionsTarget, unpack
       forceOverwrite: true,
       noDirectory: true
     };
-    if (typeof optionsTarget === 'string') {
+    if (isString(optionsTarget)) {
       options.targetDir = optionsTarget;
-      if (typeof unpackOptions === 'string' || Array.isArray(unpackOptions))
+      if (isString(unpackOptions) || isArray(unpackOptions))
         options.files = unpackOptions;
-      else if (typeof unpackOptions === 'object')
+      else if (isObjectOnly(unpackOptions))
         options = Object.assign(options, unpackOptions);
-    } else if (typeof optionsTarget === 'object') {
+    } else if (isObjectOnly(optionsTarget)) {
       options = Object.assign(options, optionsTarget);
     }
 
@@ -68,7 +68,7 @@ export const unpack = Unar.unpack = function (archiveFile, optionsTarget, unpack
       return reject("Error: archiveFile or options.archiveFile missing.");
 
     // Unar command:
-    let ar = [(process.platform != "linux") ? join(__dirname, 'unar') : 'unar'];
+    let ar = [!isLinux() ? join(__dirname, 'unar') : 'unar'];
 
     // Archive file (source):
     //ar.push('SOURCEFILE');
@@ -132,7 +132,7 @@ export const unpack = Unar.unpack = function (archiveFile, optionsTarget, unpack
 
     if (options.indexes) {
       // -indexes (-i): Instead of specifying the files to unpack as filenames or wildcard patterns, specify them as indexes, as output by lsar.
-      if (Array.isArray(options.indexes)) {
+      if (isArray(options.indexes)) {
         options.indexes.forEach(function (idx) {
           ar.push('-i');
           ar.push('' + idx); // string!
@@ -141,7 +141,7 @@ export const unpack = Unar.unpack = function (archiveFile, optionsTarget, unpack
         return reject('options.indexes must be an array of integer, but it is: ' + JSON.stringify(options.indexes))
       }
     } else if (options.files) {
-      if (Array.isArray(options.files)) {
+      if (isArray(options.files)) {
         options.files.forEach(function (s) {
           ar.push(s);
         });
@@ -214,7 +214,7 @@ export const list = Unar.list = function (archiveFile, options) {
       options = {};
 
     // lsar command:
-    let ar = [(process.platform != "linux") ? join(__dirname, 'lsar') : 'lsar'];
+    let ar = [!isLinux() ? join(__dirname, 'lsar') : 'lsar'];
 
     // Archive file (source):
     //ar.push('SOURCEFILE');

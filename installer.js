@@ -6,24 +6,24 @@ import fs from 'fs-extra';
 import { join } from 'path';
 import StreamZip from 'node-stream-zip';
 import { wget } from "node-wget-fetch";
-import { installer } from 'node-sys';
+import { installer, isMac, isWindows } from 'node-sys';
 
-const unarAppFile = (process.platform == "darwin") ? 'unarMac.zip' : 'unarWindows.zip';
+const unarAppFile = isMac() ? 'unarMac.zip' : 'unarWindows.zip';
 const unarAppUrl = 'https://cdn.theunarchiver.com/downloads/';
 
 const cwd = process.cwd();
 const url = unarAppUrl + unarAppFile;
 const source = join(cwd, unarAppFile);
 
-if ((process.platform == "win32") || (process.platform == "darwin")) {
+if (isWindows() || isMac()) {
   getExtractUnar(url, source, cwd)
     .then(function () {
       fs.unlink(source, (err) => {
         if (err) console.error(err);
       });
-      if (process.platform == 'win32')
+      if (isWindows())
         fs.removeSync(join(cwd, '__MACOSX'));
-      if (process.platform != "win32") {
+      if (!isWindows()) {
         var chmod = ['unar', 'lsar'];
         chmod.forEach(function (s) {
           fs.chmodSync(join(cwd, s), 755)
